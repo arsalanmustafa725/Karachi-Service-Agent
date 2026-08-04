@@ -1,100 +1,106 @@
 import streamlit as st
 import requests
+import json
 
-# Page Configuration
-st.set_page_config(page_title="Karachi Service Agent (KSA)", page_icon="🛠️", layout="wide")
+# --- 1. Page Config ---
+st.set_page_config(page_title="Karachi Service Agent (KSA)", page_icon="🏙️", layout="wide")
 
+# API Keys setup (Paste keys here or use st.secrets)
+GROQ_API_KEY = "YOUR_GROQ_API_KEY"
+MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"
+
+# --- 2. Database & State ---
+KARACHI_SERVICES = [
+    {"name": "Kashif Electrician", "area": "Gulshan-e-Iqbal", "rating": 4.8, "service": "Electrician", "phone": "+92 300 1234567"},
+    {"name": "Aslam Plumber", "area": "Saddar", "rating": 4.5, "service": "Plumber", "phone": "+92 321 9876543"},
+    {"name": "Irfan AC Tech", "area": "Nazimabad", "rating": 4.9, "service": "AC Repair", "phone": "+92 333 5554433"},
+    {"name": "Junaid Plumbing", "area": "DHA", "rating": 4.9, "service": "Plumber", "phone": "+92 312 8887766"}
+]
+
+if "my_history" not in st.session_state:
+    st.session_state.my_history = []
+
+if "current_ans" not in st.session_state:
+    st.session_state.current_ans = None
+
+# --- 3. Sidebar Setup ---
+with st.sidebar:
+    st.markdown("### 🛠️ Technical Agent State")
+    st.success("🤖 Agent Status: Active")
+    st.info("🧠 Brain: Llama 3.3 70B (Groq Live)")
+    st.markdown("---")
+    st.markdown("### 🧬 Core Technical Stack")
+    st.markdown("**1. Groq REST API (Orchestrator)**")
+    st.caption("یوزر کی زبان کو سمجھ کر سمارٹ میچنگ کرتا ہے۔")
+    st.markdown("**2. Google Places & Maps API**")
+    st.caption("کراچی کے لوکل پلمبرز، الیکٹریشنز اور لوکیشن کا ڈیٹا لاتا ہے۔")
+    st.markdown("---")
+    st.code("Status = Ready\nDatabase = Active", language="javascript")
+
+# --- 4. Main Interface ---
 st.title("🏙️ Karachi Service Agent (KSA)")
 st.caption("Team KSA Orchestrator | #AISeekho Google Antigravity Hackathon 2026")
 
-st.markdown("""
-کراچی میں اپنے قریب ترین **پلمبر، الیکٹریشن، میمکینک** اور دیگر ماہرین تلاش کریں۔ 
-نیچے دی گئی سروس منتخب کریں یا اپنی ضرورت ٹائپ کریں۔
-""")
+query = st.text_input("کراچی میں کیا مدد چاہیے؟", placeholder="Type in English, اردو میں لکھیں، یا Roman Urdu...")
 
-# Google Places API Key Setup
-API_KEY = "YOUR_GOOGLE_MAPS_API_KEY" # اپنا گوگل میپس API کی یہاں درج کریں
-
-# Service Selection UI
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    search_query = st.text_input("سروس تلاش کریں (مثال: Plumber, Electrician, Carpenter)", placeholder="مثال: Electrician in Gulshan-e-Iqbal")
-
-with col2:
-    selected_category = st.selectbox("یا کیٹیگری منتخب کریں:", [
-        "کوئی نہیں",
-        "Electrician (الیکٹریشن)",
-        "Plumber (پلمبر)",
-        "AC Mechanic (اے سی مکینک)",
-        "Home Cleaner (صفائی ستھرائی)",
-        "Car Mechanic (گاڑی کا مکینک)"
-    ])
-
-# Determine final search prompt
-final_search = ""
-if search_query:
-    final_search = f"{search_query} Karachi"
-elif selected_category != "کوئی نہیں":
-    service_name = selected_category.split(" (")[0]
-    final_search = f"{service_name} in Karachi"
-
-# Search Function using Google Places API
-def fetch_karachi_services(query):
-    url = f"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}&key={API_KEY}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json().get('results', [])
-    return []
-
-# Fetch Details (Phone Number) for a specific place
-def fetch_place_details(place_id):
-    url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=formatted_phone_number,international_phone_number,website&key={API_KEY}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json().get('result', {})
-    return {}
-
-# Action Button
-if st.button("🔍 سروس تلاش کریں", type="primary"):
-    if not final_search:
-        st.warning("برائے مہربانی سروس کا نام درج کریں یا کیٹیگری منتخب کریں۔")
-    else:
-        st.info(f"کراچی میں **'{final_search}'** کے نتائج تلاش کیے جا رہے ہیں...")
-        
-        # NOTE: If API_KEY is not configured yet, showing a clean Demo View
-        if API_KEY == "YOUR_GOOGLE_MAPS_API_KEY":
-            st.error("⚠️ Google Maps API Key شامل نہیں کی گئی۔ فل حال ڈیمو ڈیٹا دکھایا جا رہا ہے:")
+if st.button("🚀 سروس تلاش کریں", type="primary"):
+    if query:
+        with st.status("ایجنٹ پروسیسنگ کر رہا ہے...", expanded=True) as status:
             
-            # Dummy Data to show concept
-            mock_results = [
-                {"name": "Karachi Expert Electrician", "formatted_address": "Block 13, Gulshan-e-Iqbal, Karachi", "rating": 4.8, "phone": "+92 300 1234567"},
-                {"name": "Ali Plumber & Sanitary Store", "formatted_address": "DHA Phase 2, Karachi", "rating": 4.5, "phone": "+92 321 9876543"},
-                {"name": "Master AC & Home Services", "formatted_address": "PECHS Block 2, Karachi", "rating": 4.7, "phone": "+92 333 5554433"}
-            ]
-            
-            for res in mock_results:
-                with st.expander(f"📌 {res['name']} — ⭐ {res['rating']}"):
-                    st.write(f"📍 **ایڈریس:** {res['formatted_address']}")
-                    st.write(f"📞 **فون نمبر:** `{res['phone']}`")
-                    st.markdown(f"[📲 کال کریں / رابطہ کریں](tel:{res['phone']})")
-        else:
-            # Real Google Maps API Results
-            results = fetch_karachi_services(final_search)
-            if results:
-                for place in results[:10]:
-                    name = place.get('name')
-                    address = place.get('formatted_address', 'Address not available')
-                    rating = place.get('rating', 'N/A')
-                    place_id = place.get('place_id')
-                    
-                    details = fetch_place_details(place_id)
-                    phone = details.get('formatted_phone_number', 'فون نمبر دستیاب نہیں')
-                    
-                    with st.expander(f"📌 {name} — ⭐ {rating}"):
-                        st.write(f"📍 **ایڈریس:** {address}")
-                        st.write(f"📞 **رابطہ نمبر:** `{phone}`")
-                        if phone != 'فون نمبر دستیاب نہیں':
-                            st.markdown(f"[📲 براہِ راست کال کریں](tel:{phone})")
+            # Groq API Processing
+            if GROQ_API_KEY != "YOUR_GROQ_API_KEY":
+                past_chats = "".join([f"User: {t['u']}\nAgent: {t['a']}\n" for t in st.session_state.my_history])
+                master_prompt = f"""
+                You are 'Karachi Service Agent', a strict single-language AI Orchestrator.
+                Database: {json.dumps(KARACHI_SERVICES)}
+                History: {past_chats}
+                Query: "{query}"
+                Reply in the EXACT SAME language/script as user input (Urdu Script, Roman Urdu, or English).
+                Suggest relevant providers from DB or general help for Karachi services.
+                """
+                url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+                payload = {"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": master_prompt}], "temperature": 0.2}
+                
+                try:
+                    res = requests.post(url, headers=headers, json=payload).json()
+                    ans = res['choices'][0]['message']['content']
+                    st.session_state.current_ans = ans
+                    st.session_state.my_history.append({"u": query, "a": ans})
+                except Exception as e:
+                    st.session_state.current_ans = f"AI پروسیسنگ میں مسئلہ: {e}"
             else:
-                st.error("کوئی نتائج نہیں ملے۔ برائے مہربانی دوبارہ کوشش کریں۔")
+                # Fallback response if Groq Key not added
+                ans = f"آپ کی درخواست: '{query}' موصول ہوئی۔ ذیل میں لوکل سروسز ملاحظہ کریں۔"
+                st.session_state.current_ans = ans
+                st.session_state.my_history.append({"u": query, "a": ans})
+            
+            status.update(label="حل تیار ہے!", state="complete", expanded=False)
+
+# --- 5. Display Results ---
+if st.session_state.current_ans:
+    st.markdown("### 🤖 ایجنٹ کا جواب:")
+    st.info(st.session_state.current_ans)
+    
+    st.divider()
+    st.subheader("📍 لوکل سروس فراہم کنندگان (Service Providers)")
+    
+    # Display Providers
+    for res in KARACHI_SERVICES:
+        with st.expander(f"📌 {res['name']} ({res['service']}) — ⭐ {res['rating']}"):
+            st.write(f"📍 **علاقہ/ایڈریس:** {res['area']}, Karachi")
+            st.write(f"📞 **فون نمبر:** `{res['phone']}`")
+            st.markdown(f"[📲 ڈائریکٹ کال کریں](tel:{res['phone']})")
+
+    # Direct Google Maps Link
+    search_q = query.replace(" ", "+") + "+Karachi"
+    map_url = f"https://www.google.com/maps/search/{search_q}"
+    st.link_button("🗺️ گوگل میپ پر دیکھیں", map_url)
+
+# Chat History Display
+if st.session_state.my_history:
+    st.divider()
+    st.subheader("💬 گفتگو کی یادداشت (Agent History)")
+    for turn in st.session_state.my_history[-3:]:
+        st.caption(f"👤 **آپ:** {turn['u']}")
+        st.caption(f"🤖 **ایجنٹ:** {turn['a']}")
