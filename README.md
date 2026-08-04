@@ -1,41 +1,40 @@
-# 🏙️ Karachi Service Agent (KSA)   Phase2
+# 🏙️ Karachi Service Agent (KSA)
 > **AI Seekho Google Antigravity National Hackathon 2026 Project**  
 > **Team:** Team KSA Orchestrator  
+> **Author:** Arsalan (Team Lead)  
 
 ---
 
 ## 📌 About The Project
 
-**Karachi Service Agent (KSA)** is an AI-powered location-based service orchestration web application built specifically for the residents of Karachi, Pakistan. 
+**Karachi Service Agent (KSA)** is an AI-powered, multi-lingual location and service orchestration system built specifically for the residents of Karachi, Pakistan.
 
-Finding reliable utility services like **electricians, plumbers, mechanics, carpenters, and AC technicians** in a fast-paced city like Karachi can be challenging. KSA solves this problem by using the **Google Maps / Places API** to find trusted, top-rated local professionals based on real-time geographical queries and provides direct contact details for seamless communication.
-
----
-
-## ✨ Features
-
-* 🔎 **Instant Service Search:** Search for specific local repair services anywhere across Karachi.
-* 🏷️ **Quick Categories:** One-click pre-filtered options for Plumbers, Electricians, AC Mechanics, etc.
-* 📍 **Location & Ratings:** Fetch precise address information along with real user ratings from Google Maps.
-* 📞 **Direct Contact / Click-to-Call:** Easily retrieve phone numbers and launch direct phone dials with a single click.
-* 🎨 **User-Friendly UI:** Built with Streamlit for a fast, responsive, and easy-to-navigate user interface.
+Finding reliable service providers (such as **plumbers, electricians, AC repair technicians, and tutors**) across different neighborhoods in Karachi can be challenging. KSA solves this problem by using an **LLM-driven Agent Orchestrator (Groq Llama 3.3 70B)** that dynamically understands user queries in **Urdu Script, Roman Urdu, or English**, maps them to local service providers, and integrates with **Google Maps** for real-time location tracing and direct communication.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Key Features
 
-* **Frontend / Framework:** [Streamlit](https://streamlit.io/)
-* **Language:** Python 3.x
-* **APIs Used:** Google Places API (Text Search & Place Details)
-* **HTTP Requests:** `requests` library
+* 🧠 **Smart Language Orchestrator:** Automatically detects the input script (Urdu Script, Roman Urdu, or English) and responds strictly in the exact same script/language without code-mixing.
+* 📍 **Karachi Service Database & Location Tracing:** Maps user requirements to local mechanics, electricians, and plumbers across areas like Gulshan-e-Iqbal, Saddar, Nazimabad, and DHA.
+* 📲 **Click-to-Call Link Integration:** Generates direct dial links (`tel:`) and Google Maps search buttons for quick contact.
+* 💬 **Session Memory:** Retains multi-turn conversation context so users can ask follow-up questions seamlessly.
+* 🛠️ **Real-Time Technical Monitoring:** Built-in sidebar state logger displaying agent status, active model parameters, and stack telemetry.
 
 ---
 
-## 🚀 Getting Started
+## 🧬 Core Technical Stack
 
-Follow these steps to run the project locally on your system:
+* **Frontend / UI:** [Streamlit](https://streamlit.io/)
+* **AI Orchestrator Engine:** Groq REST API (`llama-3.3-70b-versatile`)
+* **Location & Vision Mapping:** Google Places & Maps API
+* **Language / Environment:** Python 3.x (`requests`, `json`, `streamlit`)
+
+---
+
+## 🚀 Quick Start Guide
 
 ### 1. Prerequisites
-Make sure you have Python installed on your machine.
+Ensure you have Python 3.8+ installed on your system:
 ```bash
 python --version
