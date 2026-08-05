@@ -6,8 +6,8 @@ import json
 st.set_page_config(page_title="Karachi Service Agent (KSA)", page_icon="🏙️", layout="wide")
 
 # API Keys setup (Paste keys here or use st.secrets)
-GROQ_API_KEY = "YOUR_GROQ_API_KEY"
-MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"
+GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", "YOUR_GROQ_API_KEY")
+MAPS_API_KEY = st.secrets.get("MAPS_API_KEY", "YOUR_GOOGLE_MAPS_API_KEY")
 
 # --- 2. Database & State ---
 KARACHI_SERVICES = [
@@ -85,17 +85,30 @@ if st.session_state.current_ans:
     st.divider()
     st.subheader("📍 لوکل سروس فراہم کنندگان (Service Providers)")
     
-    # Display Providers
+    # Filter Providers based on user query
+    matched = False
     for res in KARACHI_SERVICES:
-        with st.expander(f"📌 {res['name']} ({res['service']}) — ⭐ {res['rating']}"):
-            st.write(f"📍 **علاقہ/ایڈریس:** {res['area']}, Karachi")
-            st.write(f"📞 **فون نمبر:** `{res['phone']}`")
-            st.markdown(f"[📲 ڈائریکٹ کال کریں](tel:{res['phone']})")
+        if query and (res['service'].lower() in query.lower() or res['area'].lower() in query.lower()):
+            matched = True
+            with st.expander(f"📌 {res['name']} ({res['service']}) — ⭐ {res['rating']}", expanded=True):
+                st.write(f"📍 **علاقہ/ایڈریس:** {res['area']}, Karachi")
+                st.write(f"📞 **رابطہ نمبر:** `{res['phone']}`")
+    
+    # Display all if no direct query match
+    if not matched:
+        for res in KARACHI_SERVICES:
+            with st.expander(f"📌 {res['name']} ({res['service']}) — ⭐ {res['rating']}"):
+                st.write(f"📍 **علاقہ/ایڈریس:** {res['area']}, Karachi")
+                st.write(f"📞 **رابطہ نمبر:** `{res['phone']}`")
 
-    # Direct Google Maps Link
-    search_q = query.replace(" ", "+") + "+Karachi"
+    st.divider()
+    st.subheader("🗺️ لوکیشن میپ (Embedded Search)")
+    
+    # Safe Google Maps Link (Opens in new browser tab)
+    search_q = (query + " Karachi").replace(" ", "+") if query else "Karachi+Services"
     map_url = f"https://www.google.com/maps/search/{search_q}"
-    st.link_button("🗺️ گوگل میپ پر دیکھیں", map_url)
+    
+    st.markdown(f'<a href="{map_url}" target="_blank" style="text-decoration:none;"><button style="background-color:#4CAF50; color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📍 Google Maps پر لوکیشن کھولیں</button></a>', unsafe_allow_html=True)
 
 # Chat History Display
 if st.session_state.my_history:
