@@ -5,9 +5,13 @@ import json
 # --- 1. Page Config ---
 st.set_page_config(page_title="Karachi Service Agent (KSA)", page_icon="🏙️", layout="wide")
 
-# API Keys setup (Paste keys here or use st.secrets)
-GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", "YOUR_GROQ_API_KEY")
-MAPS_API_KEY = st.secrets.get("MAPS_API_KEY", "YOUR_GOOGLE_MAPS_API_KEY")
+# --- Safe API Keys Setup (StreamlitSecrets Error Handler) ---
+try:
+    GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", "YOUR_GROQ_API_KEY")
+    MAPS_API_KEY = st.secrets.get("MAPS_API_KEY", "YOUR_GOOGLE_MAPS_API_KEY")
+except Exception:
+    GROQ_API_KEY = "YOUR_GROQ_API_KEY"
+    MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"
 
 # --- 2. Database & State ---
 KARACHI_SERVICES = [
